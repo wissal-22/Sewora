@@ -47,7 +47,7 @@ export default function YardageCalculator({
           </div>
           <div className="flex items-center gap-3 bg-[#181822] p-3 rounded-2xl border border-stone-800">
             <div className="text-right">
-              <div className="text-3xl font-serif font-black text-transparent bg-clip-text bg-gradient-to-r from-[#fceec5] via-[#d4af37] to-[#e8c676]">
+              <div className="text-3xl font-serif font-black text-amber-700 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r from-[#fceec5] via-[#d4af37] to-[#e8c676]">
                 {unit === 'in' ? `${yards} yds` : `${meters} m`}
               </div>
               <div className="text-[11px] font-mono text-[#d4af37]">

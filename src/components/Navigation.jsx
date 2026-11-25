@@ -39,7 +39,7 @@ export function Sidebar({ activeTab, onSelectTab, isDark, onToggleDark }) {
               <h1 className="text-2xl font-serif font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-stone-900 via-amber-700 to-amber-500 dark:from-[#fceec5] dark:via-[#d4af37] dark:to-[#e8c676]">
                 SEWORA
               </h1>
-              <p className="text-[10px] tracking-[0.25em] text-amber-700 dark:text-[#d4af37]/80 uppercase font-sans font-semibold">
+              <p className="text-[10px] whitespace-nowrap tracking-[0.18em] text-amber-700 dark:text-[#d4af37]/80 uppercase font-sans font-semibold">
                 Design · Tailor · Wear
               </p>
             </div>

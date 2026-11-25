@@ -60,13 +60,22 @@ export function PatternDefs() {
   );
 }
 
+// Perceived luminance check so custom colors also get a readable outline
+function isDarkHex(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+  if (!m) return false;
+  const n = parseInt(m[1], 16);
+  const lum = (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255;
+  return lum < 0.45;
+}
+
 /**
  * 2D Haute Couture Finished Garment Illustration
  */
 function GarmentMockup({ garment, options, selectedPalette }) {
   const isPattern = selectedPalette.type === 'pattern';
   const fillValue = isPattern ? `url(#pattern-${selectedPalette.patternId})` : selectedPalette.color;
-  const isDarkColor = selectedPalette.color === '#161618' || selectedPalette.id === 'royal-navy' || selectedPalette.id === 'emerald-velvet' || selectedPalette.id === 'moroccan-zellij';
+  const isDarkColor = isPattern ? selectedPalette.patternId === 'arabesque' : isDarkHex(selectedPalette.color);
   const strokeColor = isDarkColor ? '#e8c874' : '#292524';
 
   return (
@@ -621,7 +630,7 @@ export default function PatternPreview({
                 <ScissorsIcon className="w-4 h-4 text-[#d4af37]" />
                 Adjustable Seam Allowance (SA)
               </span>
-              <span className="font-mono font-bold text-[#d4af37] bg-[#d4af37]/15 border border-[#d4af37]/40 px-2.5 py-0.5 rounded-full">
+              <span className="whitespace-nowrap font-mono font-bold text-[#d4af37] bg-[#d4af37]/15 border border-[#d4af37]/40 px-2.5 py-0.5 rounded-full">
                 {seamAllowanceCm} cm ({cmToInch(seamAllowanceCm)}" in)
               </span>
             </div>
@@ -634,11 +643,11 @@ export default function PatternPreview({
               onChange={(e) => onChangeSeamAllowance(parseFloat(e.target.value))}
               className="w-full accent-[#d4af37] cursor-pointer"
             />
-            <div className="flex justify-between text-[10px] text-stone-400 mt-1.5 font-mono">
-              <span>0.5 cm (1/4 in) Knits</span>
-              <span>1.0 cm (3/8 in)</span>
-              <span>1.5 cm (5/8 in) Standard</span>
-              <span>2.0 cm (3/4 in) French Seams</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-2 gap-y-1 text-[10px] text-stone-400 mt-1.5 font-mono">
+              <span>0.5 cm · Knits</span>
+              <span className="sm:text-center">1.0 cm</span>
+              <span className="sm:text-center">1.5 cm · Standard</span>
+              <span className="text-right">2.0 cm · French seams</span>
             </div>
           </div>
 
@@ -668,11 +677,12 @@ export default function PatternPreview({
                     }
                   >
                     {palette.type === 'pattern' && (
-                      <div className="w-full h-full flex items-center justify-center bg-[#1c1c24]">
-                        <span className="text-[10px] font-bold text-[#fceec5] capitalize">
-                          {palette.patternId}
-                        </span>
-                      </div>
+                      <>
+                        <svg className="absolute inset-0 w-full h-full" aria-hidden="true">
+                          <rect width="100%" height="100%" fill={`url(#pattern-${palette.patternId})`} />
+                        </svg>
+                        <span className="sr-only">{palette.name}</span>
+                      </>
                     )}
                     {isSelected && (
                       <div className="w-5 h-5 rounded-full bg-black/80 flex items-center justify-center text-[#d4af37] shadow-sm">
@@ -689,10 +699,11 @@ export default function PatternPreview({
                     ? 'ring-2 ring-[#d4af37] scale-105 shadow-lg shadow-[#d4af37]/20 border-[#d4af37]'
                     : 'border-stone-700/80 hover:border-stone-500'
                 }`}
-                style={{
-                  backgroundColor:
-                    selectedPalette.type === 'solid' ? selectedPalette.color : '#d4af37'
-                }}
+                style={
+                  selectedPalette.id === 'custom-color'
+                    ? { backgroundColor: selectedPalette.color }
+                    : undefined
+                }
               >
                 <input
                   type="color"
@@ -710,9 +721,16 @@ export default function PatternPreview({
                   }
                   className="absolute inset-0 z-10 h-full w-full cursor-pointer opacity-0"
                 />
-                {selectedPalette.id === 'custom-color' && (
+                {selectedPalette.id === 'custom-color' ? (
                   <span className="pointer-events-none w-5 h-5 rounded-full bg-black/80 flex items-center justify-center text-[#d4af37] shadow-sm">
                     <CheckIcon className="w-3.5 h-3.5 stroke-[3]" />
+                  </span>
+                ) : (
+                  <span
+                    className="pointer-events-none absolute inset-0 flex items-center justify-center"
+                    style={{ background: 'conic-gradient(from 0deg, #ef4444, #f59e0b, #84cc16, #06b6d4, #6366f1, #d946ef, #ef4444)' }}
+                  >
+                    <span style={{ color: '#ffffff' }} className="w-6 h-6 rounded-full bg-black/70 text-base leading-none flex items-center justify-center">+</span>
                   </span>
                 )}
               </label>
@@ -742,7 +760,7 @@ export default function PatternPreview({
               CAD-style scaled drafting schematics with seam allowance, grainlines, notches, and cut instructions.
             </p>
           </div>
-          <span className="text-xs font-mono font-bold text-[#d4af37] bg-[#d4af37]/15 border border-[#d4af37]/30 px-3 py-1 rounded-full">
+          <span className="text-xs whitespace-nowrap shrink-0 font-mono font-bold text-[#d4af37] bg-[#d4af37]/15 border border-[#d4af37]/30 px-3 py-1 rounded-full">
             {activeGarment.pieces.length} Pattern Pieces
           </span>
         </div>

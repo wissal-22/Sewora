@@ -516,7 +516,7 @@ export default function MeasurementForm({
 
         {/* Profile Notes */}
         {activeProfile?.notes && (
-          <div className="mt-4 text-xs text-stone-300 italic bg-[#1a1a24]/80 border border-stone-800/80 px-4 py-2.5 rounded-xl">
+          <div className="mt-4 text-xs italic text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-[#1a1a24]/80 border border-stone-200 dark:border-stone-800/80 px-4 py-2.5 rounded-xl">
             "{activeProfile.notes}"
           </div>
         )}
@@ -536,7 +536,7 @@ export default function MeasurementForm({
                 Change any measurement: the mannequin on the right will visually morph and rescale in real time.
               </p>
             </div>
-            <span className="text-xs bg-[#d4af37]/15 text-[#f5d77f] border border-[#d4af37]/30 px-3 py-1 rounded-full font-mono font-medium">
+            <span className="text-xs whitespace-nowrap shrink-0 bg-[#d4af37]/15 text-[#f5d77f] border border-[#d4af37]/30 px-3 py-1 rounded-full font-mono font-medium">
               Live {unit.toUpperCase()}
             </span>
           </div>

@@ -32,7 +32,7 @@ export default function SizeFinder({
               Tailoring Recommendation
             </div>
             <div className="flex items-baseline gap-3">
-              <h2 className="text-4xl sm:text-5xl font-serif font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-[#fceec5] via-[#d4af37] to-[#e8c676]">
+              <h2 className="text-4xl sm:text-5xl font-serif font-black tracking-tight text-amber-700 dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r from-[#fceec5] via-[#d4af37] to-[#e8c676]">
                 Size {recommendedSize.label}
               </h2>
               <span className="text-sm font-mono font-semibold text-stone-300">

@@ -99,6 +99,19 @@ html:not(.dark) [class~="border-stone-700"] {
   border-color: #e7e5e4;
 }
 
+/* Light theme: readable SVG labels and seam lines on pattern pieces */
+html:not(.dark) [class~="fill-[#fceec5]"] {
+  fill: #78350f;
+}
+
+html:not(.dark) svg [stroke="#e5c07b"] {
+  stroke: #9a6b12;
+}
+
+html:not(.dark) svg [stroke="#d4af37"] {
+  stroke: #a67c14;
+}
+
 /* Subtle custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

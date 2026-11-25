@@ -264,7 +264,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('preview')}
-                className={`p-3.5 rounded-2xl border transition-all text-left flex items-center gap-3 cursor-pointer ${
+                className={`p-3.5 rounded-2xl border transition-all text-left flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 cursor-pointer ${
                   activeTab === 'preview'
                     ? 'bg-amber-500/20 dark:bg-[#d4af37]/20 border-amber-500 dark:border-[#d4af37] shadow-md dark:shadow-lg dark:shadow-[#d4af37]/20'
                     : 'bg-white/80 dark:bg-[#14141c] border-stone-200 dark:border-stone-800 hover:border-amber-400 dark:hover:border-stone-700'
@@ -273,7 +273,7 @@ export default function App() {
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-[#d4af37] flex items-center justify-center shrink-0">
                   <ScissorsIcon className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-xs font-bold text-stone-900 dark:text-white">Custom Design</div>
                   <div className="text-[10px] text-stone-500 dark:text-stone-400">Unique patterns</div>
                 </div>
@@ -282,7 +282,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('measurements')}
-                className={`p-3.5 rounded-2xl border transition-all text-left flex items-center gap-3 cursor-pointer ${
+                className={`p-3.5 rounded-2xl border transition-all text-left flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 cursor-pointer ${
                   activeTab === 'measurements'
                     ? 'bg-amber-500/20 dark:bg-[#d4af37]/20 border-amber-500 dark:border-[#d4af37] shadow-md dark:shadow-lg dark:shadow-[#d4af37]/20'
                     : 'bg-white/80 dark:bg-[#14141c] border-stone-200 dark:border-stone-800 hover:border-amber-400 dark:hover:border-stone-700'
@@ -291,7 +291,7 @@ export default function App() {
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-[#d4af37] flex items-center justify-center shrink-0">
                   <RulerIcon className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-xs font-bold text-stone-900 dark:text-white">Measurements</div>
                   <div className="text-[10px] text-stone-500 dark:text-stone-400">Sculpted dummy</div>
                 </div>
@@ -300,7 +300,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('yardage')}
-                className={`p-3.5 rounded-2xl border transition-all text-left flex items-center gap-3 cursor-pointer ${
+                className={`p-3.5 rounded-2xl border transition-all text-left flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 cursor-pointer ${
                   activeTab === 'yardage'
                     ? 'bg-amber-500/20 dark:bg-[#d4af37]/20 border-amber-500 dark:border-[#d4af37] shadow-md dark:shadow-lg dark:shadow-[#d4af37]/20'
                     : 'bg-white/80 dark:bg-[#14141c] border-stone-200 dark:border-stone-800 hover:border-amber-400 dark:hover:border-stone-700'
@@ -309,7 +309,7 @@ export default function App() {
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-[#d4af37] flex items-center justify-center shrink-0">
                   <FabricRollIcon className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-xs font-bold text-stone-900 dark:text-white">Fabric Calculator</div>
                   <div className="text-[10px] text-stone-500 dark:text-stone-400">Bolt & yardage</div>
                 </div>
@@ -318,7 +318,7 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setActiveTab('guide')}
-                className={`p-3.5 rounded-2xl border transition-all text-left flex items-center gap-3 cursor-pointer ${
+                className={`p-3.5 rounded-2xl border transition-all text-left flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 cursor-pointer ${
                   activeTab === 'guide'
                     ? 'bg-amber-500/20 dark:bg-[#d4af37]/20 border-amber-500 dark:border-[#d4af37] shadow-md dark:shadow-lg dark:shadow-[#d4af37]/20'
                     : 'bg-white/80 dark:bg-[#14141c] border-stone-200 dark:border-stone-800 hover:border-amber-400 dark:hover:border-stone-700'
@@ -327,7 +327,7 @@ export default function App() {
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-700 dark:text-[#d4af37] flex items-center justify-center shrink-0">
                   <BookOpenIcon className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="text-xs font-bold text-stone-900 dark:text-white">Couture Academy</div>
                   <div className="text-[10px] text-stone-500 dark:text-stone-400">Sfifa & Stitches</div>
                 </div>
