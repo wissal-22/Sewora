@@ -1,0 +1,6 @@
+projectKey=sewora
+serverUrl=http://localhost:9000
+serverVersion=25.11.0.114957
+dashboardUrl=http://localhost:9000/dashboard?id=sewora
+ceTaskId=d03f53ef-3541-448e-a36a-a75518b36c5c
+ceTaskUrl=http://localhost:9000/api/ce/task?id=d03f53ef-3541-448e-a36a-a75518b36c5c
