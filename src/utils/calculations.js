@@ -9,22 +9,23 @@ export const CM_PER_INCH = 2.54;
 
 /**
  * Converts centimeters to inches
- * @param {number} cm 
- * @returns {number} inches rounded to 2 decimal places
+ * @param {number} cm
+ * @param {number} digits - decimal places (default 2, so cm -> in -> cm stays stable)
+ * @returns {number} inches
  */
-export function cmToInch(cm) {
-  if (cm === null || cm === undefined || isNaN(cm)) return 0;
-  return Number((cm / CM_PER_INCH).toFixed(1));
+export function cmToInch(cm, digits = 2) {
+  if (cm === null || cm === undefined || cm === '' || isNaN(cm)) return 0;
+  return Number((Number(cm) / CM_PER_INCH).toFixed(digits));
 }
 
 /**
  * Converts inches to centimeters
  * @param {number} inch 
- * @returns {number} cm rounded to 1 decimal place
+ * @returns {number} cm rounded to 2 decimal places
  */
 export function inchToCm(inch) {
-  if (inch === null || inch === undefined || isNaN(inch)) return 0;
-  return Number((inch * CM_PER_INCH).toFixed(1));
+  if (inch === null || inch === undefined || inch === '' || isNaN(inch)) return 0;
+  return Number((Number(inch) * CM_PER_INCH).toFixed(2));
 }
 
 /**
@@ -37,7 +38,7 @@ export function inchToCm(inch) {
 export function formatMeasurement(valInCm, unit = 'cm', showUnit = true) {
   if (!valInCm || isNaN(valInCm)) return '-';
   if (unit === 'in') {
-    const inches = cmToInch(valInCm);
+    const inches = cmToInch(valInCm, 1);
     return `${inches}${showUnit ? ' in' : ''}`;
   }
   return `${Number(valInCm).toFixed(1)}${showUnit ? ' cm' : ''}`;
@@ -129,6 +130,16 @@ export function findSizeForMeasurement(field, valueCm) {
 export function determineRecommendedSize(measurements, fitPreference = 'regular') {
   const ease = FIT_PREFERENCES[fitPreference] || FIT_PREFERENCES.regular;
 
+  // Track which measurements were missing (we fall back to typical values)
+  // and which fall outside the size chart, so the UI can tell the user.
+  const usedDefaults = ['bust', 'waist', 'hips'].filter((k) => !Number(measurements[k]));
+  const outOfChart = ['bust', 'waist', 'hips'].filter((k) => {
+    const v = Number(measurements[k]);
+    if (!v) return false;
+    const values = SIZE_CHART.map((r) => r[k]);
+    return v < Math.min(...values) - 6 || v > Math.max(...values) + 6;
+  });
+
   // Internal calculations: calculate body + ease
   const adjusted = {
     bust: (Number(measurements.bust) || 90) + ease.bustEase,
@@ -169,8 +180,10 @@ export function determineRecommendedSize(measurements, fitPreference = 'regular'
   });
 
   // Check if body parts fall into different sizes
-  const sizesFound = new Set([bustMatch.label, waistMatch.label, hipsMatch.label]);
-  const hasMismatch = sizesFound.size > 1;
+  // Only flag a mismatch when body parts are at least 2 chart steps apart
+  // (adjacent half-sizes like M vs M/L are normal and don't need grading).
+  const idx = [bustMatch, waistMatch, hipsMatch].map((r) => SIZE_CHART.indexOf(r));
+  const hasMismatch = Math.max(...idx) - Math.min(...idx) >= 2;
 
   let mismatchNotes = [];
   if (hasMismatch) {
@@ -192,7 +205,9 @@ export function determineRecommendedSize(measurements, fitPreference = 'regular'
     hasMismatch,
     mismatchNotes,
     adjustedMeasurements: adjusted,
-    fitEase: ease
+    fitEase: ease,
+    usedDefaults,
+    outOfChart
   };
 }
 
@@ -202,7 +217,7 @@ export function determineRecommendedSize(measurements, fitPreference = 'regular'
  * and nap / directional print.
  * 
  * Formula:
- * Length needed = (Base garment length * cut count factor) + sleeves + facing/waistband + hem allowances + shrinkage (5%).
+ * Length needed = (Base garment length * cut count factor) + sleeves + facing/waistband + hem allowances + shrinkage (6%).
  * If fabric width is narrow (110cm vs 140/150cm), wider pieces (skirts, caftans, trousers) cannot fit side-by-side,
  * requiring an extra garment length (width factor: 1.35x to 1.5x).
  * Directional nap requires pieces to be laid out in the same direction, adding +15% yardage.
@@ -220,14 +235,13 @@ export function calculateFabricRequirements(garment, sizeLabel, fabricWidthCm = 
     return { meters: 2.0, yards: 2.2, breakdown: [] };
   }
 
-  // Hem length modifier in cm
+  // Fallback hem modifiers (cm), only used if a garment option has no explicit lengthCm
   const hemAdjustments = {
     mini: -20,
     knee: 0,
     midi: +22,
     maxi: +45
   };
-  const hemDelta = hemAdjustments[hemOption] || 0;
 
   // Sleeve modifier in cm
   const sleeveAdjustments = {
@@ -238,10 +252,15 @@ export function calculateFabricRequirements(garment, sizeLabel, fabricWidthCm = 
   };
   const sleeveDelta = garment.hasSleeves ? (sleeveAdjustments[sleeveOption] || 0) : 0;
 
-  // Garment base length for chosen variation
-  const effectiveLengthCm = Math.max(40, garment.baseLengthCm + hemDelta);
+  // Garment length for the chosen variation: use the explicit length declared
+  // on the option (matches its label), else fall back to base + delta.
+  const hemChoice = garment.options?.hem?.find((o) => o.id === hemOption);
+  const effectiveLengthCm = Math.max(
+    30,
+    hemChoice?.lengthCm ?? garment.baseLengthCm + (hemAdjustments[hemOption] || 0)
+  );
 
-  // Size scaling factor: XS is 0.92, M is 1.0, 3XL is 1.25
+  // Size scaling factor: XS is 0.92, S/M is 1.0, M is 1.03, 3XL is 1.33
   const sizeFactors = {
     'XS': 0.92, 'XS/S': 0.95, 'S': 0.97, 'S/M': 1.0,
     'M': 1.03, 'M/L': 1.06, 'L': 1.10, 'L/XL': 1.14,

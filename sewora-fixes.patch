@@ -1,0 +1,496 @@
+diff --git a/.gitignore b/.gitignore
+index a547bf3..cd52b86 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -22,3 +22,6 @@ dist-ssr
+ *.njsproj
+ *.sln
+ *.sw?
++
++# SonarQube scanner output
++.scannerwork/
+diff --git a/.scannerwork/.sonar_lock b/.scannerwork/.sonar_lock
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/.scannerwork/report-task.txt b/.scannerwork/report-task.txt
+deleted file mode 100644
+index 1e9c28f..0000000
+--- a/.scannerwork/report-task.txt
++++ /dev/null
+@@ -1,6 +0,0 @@
+-projectKey=sewora
+-serverUrl=http://localhost:9000
+-serverVersion=25.11.0.114957
+-dashboardUrl=http://localhost:9000/dashboard?id=sewora
+-ceTaskId=d03f53ef-3541-448e-a36a-a75518b36c5c
+-ceTaskUrl=http://localhost:9000/api/ce/task?id=d03f53ef-3541-448e-a36a-a75518b36c5c
+diff --git a/README.md b/README.md
+index f7f2b17..945fddd 100644
+--- a/README.md
++++ b/README.md
+@@ -62,7 +62,7 @@
+ ## 🚀 How to Run the App
+ 
+ 1. Ensure [Node.js](https://nodejs.org) (v18+) is installed.
+-2. In the project directory (`c:\Users\pc\Sewora`), start the Vite development server:
++2. In the project directory, install dependencies with `npm install`, then start the Vite development server:
+    ```bash
+    npm run dev
+    ```
+diff --git a/package.json b/package.json
+index 719420d..abd1ba8 100644
+--- a/package.json
++++ b/package.json
+@@ -7,7 +7,8 @@
+     "dev": "vite",
+     "build": "vite build",
+     "lint": "oxlint",
+-    "preview": "vite preview"
++    "preview": "vite preview",
++    "test": "vitest run"
+   },
+   "dependencies": {
+     "react": "^19.3.1",
+@@ -20,6 +21,7 @@
+     "@vitejs/plugin-react": "^6.1.2",
+     "oxlint": "^1.90.0",
+     "tailwindcss": "^4.3.5",
+-    "vite": "^8.3.6"
++    "vite": "^8.3.6",
++    "vitest": "^5.1.2"
+   }
+ }
+diff --git a/src/App.jsx b/src/App.jsx
+index 88a858a..c172661 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -22,6 +22,16 @@ import {
+   BookOpenIcon
+ } from './components/Icons';
+ 
++// Pick the option flagged `default: true` for each option group (falls back to the first one)
++function getDefaultOptions(garment) {
++  const opts = {};
++  for (const key of ['neckline', 'sleeves', 'hem', 'pockets']) {
++    const list = garment.options?.[key];
++    if (list?.length) opts[key] = (list.find((o) => o.default) || list[0]).id;
++  }
++  return opts;
++}
++
+ export default function App() {
+   // Theme state: default dark as shown in luxury couture reference image
+   const [isDark, setIsDark] = useState(() => {
+@@ -75,14 +85,7 @@ export default function App() {
+   const activeGarment = GARMENTS.find((g) => g.id === activeGarmentId) || GARMENTS[0];
+ 
+   // Garment Options State
+-  const [garmentOptions, setGarmentOptions] = useState(() => {
+-    const initialOpts = {};
+-    if (activeGarment.options.neckline?.length) initialOpts.neckline = activeGarment.options.neckline[0].id;
+-    if (activeGarment.options.sleeves?.length) initialOpts.sleeves = activeGarment.options.sleeves[0].id;
+-    if (activeGarment.options.hem?.length) initialOpts.hem = activeGarment.options.hem[0].id;
+-    if (activeGarment.options.pockets?.length) initialOpts.pockets = activeGarment.options.pockets[0].id;
+-    return initialOpts;
+-  });
++  const [garmentOptions, setGarmentOptions] = useState(() => getDefaultOptions(activeGarment));
+ 
+   // Seam Allowance (cm)
+   const [seamAllowanceCm, setSeamAllowanceCm] = useState(1.5);
+@@ -164,11 +167,7 @@ export default function App() {
+     setActiveGarmentId(g.id);
+     safeStorage.set(STORAGE_KEYS.ACTIVE_GARMENT_ID, g.id);
+ 
+-    const defaultOpts = {};
+-    if (g.options.neckline?.length) defaultOpts.neckline = g.options.neckline[0].id;
+-    if (g.options.sleeves?.length) defaultOpts.sleeves = g.options.sleeves[0].id;
+-    if (g.options.hem?.length) defaultOpts.hem = g.options.hem[0].id;
+-    if (g.options.pockets?.length) defaultOpts.pockets = g.options.pockets[0].id;
++    const defaultOpts = getDefaultOptions(g);
+     setGarmentOptions(defaultOpts);
+   };
+ 
+diff --git a/src/components/MeasurementForm.jsx b/src/components/MeasurementForm.jsx
+index fb04330..c72c504 100644
+--- a/src/components/MeasurementForm.jsx
++++ b/src/components/MeasurementForm.jsx
+@@ -10,7 +10,7 @@ import { TapeMeasureIcon, PlusIcon, TrashIcon, AlertCircleIcon, InfoIcon, CheckI
+ function BodyDiagram({ activeField, measurements, unit }) {
+   const currentTip = MEASURING_TIPS[activeField] || MEASURING_TIPS.bust;
+   const currentVal = measurements ? measurements[activeField] : 0;
+-  const displayVal = unit === 'in' ? `${cmToInch(currentVal)}" in` : `${currentVal} cm`;
++  const displayVal = unit === 'in' ? `${cmToInch(currentVal, 1)}" in` : `${currentVal} cm`;
+ 
+   // Center axis
+   const cx = 110;
+@@ -582,7 +582,7 @@ export default function MeasurementForm({
+                     <div className="text-[11px] text-stone-400 font-mono mt-0.5">
+                       {unit === 'in'
+                         ? `≈ ${(rawCm ?? 0).toFixed(1)} cm`
+-                        : `≈ ${cmToInch(rawCm)} in`}
++                        : `≈ ${cmToInch(rawCm, 1)} in`}
+                     </div>
+                   </div>
+                 </div>
+diff --git a/src/components/SizeFinder.jsx b/src/components/SizeFinder.jsx
+index 082ed5b..1bb8d6b 100644
+--- a/src/components/SizeFinder.jsx
++++ b/src/components/SizeFinder.jsx
+@@ -14,7 +14,9 @@ export default function SizeFinder({
+     breakdown,
+     hasMismatch,
+     mismatchNotes,
+-    fitEase
++    fitEase,
++    usedDefaults,
++    outOfChart
+   } = determineRecommendedSize(measurements, fitPreference);
+ 
+   return (
+@@ -71,6 +73,27 @@ export default function SizeFinder({
+           </div>
+         </div>
+ 
++        {/* Data-quality warnings: missing or out-of-chart measurements */}
++        {(usedDefaults.length > 0 || outOfChart.length > 0) && (
++          <div className="mt-6 flex items-start gap-3.5 bg-[#1a1714] border border-[#d4af37]/30 p-4 rounded-2xl text-xs text-stone-200">
++            <AlertCircleIcon className="w-5 h-5 text-[#d4af37] shrink-0 mt-0.5" />
++            <div className="space-y-1">
++              {usedDefaults.length > 0 && (
++                <p>
++                  Missing measurement(s): <strong>{usedDefaults.join(', ')}</strong>. A typical value was
++                  used, so this size is only an estimate. Fill them in on the Measurements tab.
++                </p>
++              )}
++              {outOfChart.length > 0 && (
++                <p>
++                  <strong>{outOfChart.join(', ')}</strong> fall outside the standard size chart. The
++                  closest size is shown, but custom pattern grading is needed.
++                </p>
++              )}
++            </div>
++          </div>
++        )}
++
+         {/* Multi-Body-Part Mismatch Alert & Grading Advice */}
+         {hasMismatch && (
+           <div className="mt-6 pt-5 border-t border-stone-800/80 flex flex-col sm:flex-row items-start gap-3.5 bg-[#1a1714] border border-[#d4af37]/30 p-4 sm:p-5 rounded-2xl text-xs text-stone-200">
+diff --git a/src/data/garments.js b/src/data/garments.js
+index 603f33f..ffffa47 100644
+--- a/src/data/garments.js
++++ b/src/data/garments.js
+@@ -37,8 +37,8 @@ export const GARMENTS = [
+         { id: 'short', label: 'Short Bell Sleeve' }
+       ],
+       hem: [
+-        { id: 'maxi', label: 'Floor-length Maxi (145 cm)', default: true },
+-        { id: 'midi', label: 'Midi Kaftan Tunica (115 cm)' }
++        { id: 'maxi', label: 'Floor-length Maxi (145 cm)', lengthCm: 145, default: true },
++        { id: 'midi', label: 'Midi Kaftan Tunica (115 cm)', lengthCm: 115 }
+       ],
+       pockets: [
+         { id: 'side-slit', label: 'Side Seam Slits & Open Pocket Reach', default: true },
+@@ -133,10 +133,10 @@ export const GARMENTS = [
+       neckline: [],
+       sleeves: [],
+       hem: [
+-        { id: 'mini', label: 'Mini (45 cm)' },
+-        { id: 'knee', label: 'Knee Length (60 cm)', default: true },
+-        { id: 'midi', label: 'Midi Length (75 cm)' },
+-        { id: 'maxi', label: 'Maxi Length (95 cm)' }
++        { id: 'mini', label: 'Mini (45 cm)', lengthCm: 45 },
++        { id: 'knee', label: 'Knee Length (60 cm)', lengthCm: 60, default: true },
++        { id: 'midi', label: 'Midi Length (75 cm)', lengthCm: 75 },
++        { id: 'maxi', label: 'Maxi Length (95 cm)', lengthCm: 95 }
+       ],
+       pockets: [
+         { id: 'patch', label: 'Curved Patch Pockets', default: true },
+@@ -226,9 +226,9 @@ export const GARMENTS = [
+         { id: 'none', label: 'Sleeveless / Muscle Tank' }
+       ],
+       hem: [
+-        { id: 'knee', label: 'Standard Hip Length (65 cm)', default: true },
+-        { id: 'mini', label: 'Cropped Length (50 cm)' },
+-        { id: 'midi', label: 'Tunic Length (80 cm)' }
++        { id: 'knee', label: 'Standard Hip Length (65 cm)', lengthCm: 65, default: true },
++        { id: 'mini', label: 'Cropped Length (50 cm)', lengthCm: 50 },
++        { id: 'midi', label: 'Tunic Length (80 cm)', lengthCm: 80 }
+       ],
+       pockets: [
+         { id: 'none', label: 'No Pocket', default: true },
+@@ -317,9 +317,9 @@ export const GARMENTS = [
+         { id: 'none', label: 'Sleeveless with Bias Finish' }
+       ],
+       hem: [
+-        { id: 'knee', label: 'Knee Length (95 cm)', default: true },
+-        { id: 'midi', label: 'Midi Length (115 cm)' },
+-        { id: 'mini', label: 'Mini (82 cm)' }
++        { id: 'knee', label: 'Knee Length (95 cm)', lengthCm: 95, default: true },
++        { id: 'midi', label: 'Midi Length (115 cm)', lengthCm: 115 },
++        { id: 'mini', label: 'Mini (82 cm)', lengthCm: 82 }
+       ],
+       pockets: [
+         { id: 'in-seam', label: 'Hidden In-Seam Pockets', default: true },
+@@ -400,9 +400,9 @@ export const GARMENTS = [
+       neckline: [],
+       sleeves: [],
+       hem: [
+-        { id: 'knee', label: 'Standard Tote (40 x 38 x 10 cm)', default: true },
+-        { id: 'mini', label: 'Compact Book Tote (32 x 30 x 8 cm)' },
+-        { id: 'maxi', label: 'Oversized Beach Tote (52 x 45 x 14 cm)' }
++        { id: 'knee', label: 'Standard Tote (40 x 38 x 10 cm)', lengthCm: 40, default: true },
++        { id: 'mini', label: 'Compact Book Tote (32 x 30 x 8 cm)', lengthCm: 32 },
++        { id: 'maxi', label: 'Oversized Beach Tote (52 x 45 x 14 cm)', lengthCm: 52 }
+       ],
+       pockets: [
+         { id: 'inner', label: 'Divided Inner Slip Pocket', default: true },
+@@ -483,10 +483,10 @@ export const GARMENTS = [
+       neckline: [],
+       sleeves: [],
+       hem: [
+-        { id: 'knee', label: 'Standard Square 18"x18" (45x45 cm)', default: true },
+-        { id: 'mini', label: 'Accent Pillow 14"x14" (35x35 cm)' },
+-        { id: 'midi', label: 'Euro Sham 24"x24" (60x60 cm)' },
+-        { id: 'maxi', label: 'Lumbar Pillow 14"x28" (35x70 cm)' }
++        { id: 'knee', label: 'Standard Square 18"x18" (45x45 cm)', lengthCm: 45, default: true },
++        { id: 'mini', label: 'Accent Pillow 14"x14" (35x35 cm)', lengthCm: 35 },
++        { id: 'midi', label: 'Euro Sham 24"x24" (60x60 cm)', lengthCm: 60 },
++        { id: 'maxi', label: 'Lumbar Pillow 14"x28" (35x70 cm)', lengthCm: 70 }
+       ],
+       pockets: []
+     },
+@@ -550,9 +550,9 @@ export const GARMENTS = [
+       neckline: [],
+       sleeves: [],
+       hem: [
+-        { id: 'knee', label: 'Full Length Floor Skim (102 cm)', default: true },
+-        { id: 'mini', label: 'Cropped Ankle Length (90 cm)' },
+-        { id: 'midi', label: 'Culottes / Mid-Calf (78 cm)' }
++        { id: 'knee', label: 'Full Length Floor Skim (102 cm)', lengthCm: 102, default: true },
++        { id: 'mini', label: 'Cropped Ankle Length (90 cm)', lengthCm: 90 },
++        { id: 'midi', label: 'Culottes / Mid-Calf (78 cm)', lengthCm: 78 }
+       ],
+       pockets: [
+         { id: 'slant', label: 'Slant Front Slash Pockets', default: true },
+diff --git a/src/utils/calculations.js b/src/utils/calculations.js
+index 2bbb407..d8e9f65 100644
+--- a/src/utils/calculations.js
++++ b/src/utils/calculations.js
+@@ -9,22 +9,23 @@ export const CM_PER_INCH = 2.54;
+ 
+ /**
+  * Converts centimeters to inches
+- * @param {number} cm 
+- * @returns {number} inches rounded to 2 decimal places
++ * @param {number} cm
++ * @param {number} digits - decimal places (default 2, so cm -> in -> cm stays stable)
++ * @returns {number} inches
+  */
+-export function cmToInch(cm) {
+-  if (cm === null || cm === undefined || isNaN(cm)) return 0;
+-  return Number((cm / CM_PER_INCH).toFixed(1));
++export function cmToInch(cm, digits = 2) {
++  if (cm === null || cm === undefined || cm === '' || isNaN(cm)) return 0;
++  return Number((Number(cm) / CM_PER_INCH).toFixed(digits));
+ }
+ 
+ /**
+  * Converts inches to centimeters
+  * @param {number} inch 
+- * @returns {number} cm rounded to 1 decimal place
++ * @returns {number} cm rounded to 2 decimal places
+  */
+ export function inchToCm(inch) {
+-  if (inch === null || inch === undefined || isNaN(inch)) return 0;
+-  return Number((inch * CM_PER_INCH).toFixed(1));
++  if (inch === null || inch === undefined || inch === '' || isNaN(inch)) return 0;
++  return Number((Number(inch) * CM_PER_INCH).toFixed(2));
+ }
+ 
+ /**
+@@ -37,7 +38,7 @@ export function inchToCm(inch) {
+ export function formatMeasurement(valInCm, unit = 'cm', showUnit = true) {
+   if (!valInCm || isNaN(valInCm)) return '-';
+   if (unit === 'in') {
+-    const inches = cmToInch(valInCm);
++    const inches = cmToInch(valInCm, 1);
+     return `${inches}${showUnit ? ' in' : ''}`;
+   }
+   return `${Number(valInCm).toFixed(1)}${showUnit ? ' cm' : ''}`;
+@@ -129,6 +130,16 @@ export function findSizeForMeasurement(field, valueCm) {
+ export function determineRecommendedSize(measurements, fitPreference = 'regular') {
+   const ease = FIT_PREFERENCES[fitPreference] || FIT_PREFERENCES.regular;
+ 
++  // Track which measurements were missing (we fall back to typical values)
++  // and which fall outside the size chart, so the UI can tell the user.
++  const usedDefaults = ['bust', 'waist', 'hips'].filter((k) => !Number(measurements[k]));
++  const outOfChart = ['bust', 'waist', 'hips'].filter((k) => {
++    const v = Number(measurements[k]);
++    if (!v) return false;
++    const values = SIZE_CHART.map((r) => r[k]);
++    return v < Math.min(...values) - 6 || v > Math.max(...values) + 6;
++  });
++
+   // Internal calculations: calculate body + ease
+   const adjusted = {
+     bust: (Number(measurements.bust) || 90) + ease.bustEase,
+@@ -169,8 +180,10 @@ export function determineRecommendedSize(measurements, fitPreference = 'regular'
+   });
+ 
+   // Check if body parts fall into different sizes
+-  const sizesFound = new Set([bustMatch.label, waistMatch.label, hipsMatch.label]);
+-  const hasMismatch = sizesFound.size > 1;
++  // Only flag a mismatch when body parts are at least 2 chart steps apart
++  // (adjacent half-sizes like M vs M/L are normal and don't need grading).
++  const idx = [bustMatch, waistMatch, hipsMatch].map((r) => SIZE_CHART.indexOf(r));
++  const hasMismatch = Math.max(...idx) - Math.min(...idx) >= 2;
+ 
+   let mismatchNotes = [];
+   if (hasMismatch) {
+@@ -192,7 +205,9 @@ export function determineRecommendedSize(measurements, fitPreference = 'regular'
+     hasMismatch,
+     mismatchNotes,
+     adjustedMeasurements: adjusted,
+-    fitEase: ease
++    fitEase: ease,
++    usedDefaults,
++    outOfChart
+   };
+ }
+ 
+@@ -202,7 +217,7 @@ export function determineRecommendedSize(measurements, fitPreference = 'regular'
+  * and nap / directional print.
+  * 
+  * Formula:
+- * Length needed = (Base garment length * cut count factor) + sleeves + facing/waistband + hem allowances + shrinkage (5%).
++ * Length needed = (Base garment length * cut count factor) + sleeves + facing/waistband + hem allowances + shrinkage (6%).
+  * If fabric width is narrow (110cm vs 140/150cm), wider pieces (skirts, caftans, trousers) cannot fit side-by-side,
+  * requiring an extra garment length (width factor: 1.35x to 1.5x).
+  * Directional nap requires pieces to be laid out in the same direction, adding +15% yardage.
+@@ -220,14 +235,13 @@ export function calculateFabricRequirements(garment, sizeLabel, fabricWidthCm =
+     return { meters: 2.0, yards: 2.2, breakdown: [] };
+   }
+ 
+-  // Hem length modifier in cm
++  // Fallback hem modifiers (cm), only used if a garment option has no explicit lengthCm
+   const hemAdjustments = {
+     mini: -20,
+     knee: 0,
+     midi: +22,
+     maxi: +45
+   };
+-  const hemDelta = hemAdjustments[hemOption] || 0;
+ 
+   // Sleeve modifier in cm
+   const sleeveAdjustments = {
+@@ -238,10 +252,15 @@ export function calculateFabricRequirements(garment, sizeLabel, fabricWidthCm =
+   };
+   const sleeveDelta = garment.hasSleeves ? (sleeveAdjustments[sleeveOption] || 0) : 0;
+ 
+-  // Garment base length for chosen variation
+-  const effectiveLengthCm = Math.max(40, garment.baseLengthCm + hemDelta);
++  // Garment length for the chosen variation: use the explicit length declared
++  // on the option (matches its label), else fall back to base + delta.
++  const hemChoice = garment.options?.hem?.find((o) => o.id === hemOption);
++  const effectiveLengthCm = Math.max(
++    30,
++    hemChoice?.lengthCm ?? garment.baseLengthCm + (hemAdjustments[hemOption] || 0)
++  );
+ 
+-  // Size scaling factor: XS is 0.92, M is 1.0, 3XL is 1.25
++  // Size scaling factor: XS is 0.92, S/M is 1.0, M is 1.03, 3XL is 1.33
+   const sizeFactors = {
+     'XS': 0.92, 'XS/S': 0.95, 'S': 0.97, 'S/M': 1.0,
+     'M': 1.03, 'M/L': 1.06, 'L': 1.10, 'L/XL': 1.14,
+diff --git a/src/utils/calculations.test.js b/src/utils/calculations.test.js
+new file mode 100644
+index 0000000..dccbdeb
+--- /dev/null
++++ b/src/utils/calculations.test.js
+@@ -0,0 +1,86 @@
++import { describe, it, expect } from 'vitest';
++import { GARMENTS } from '../data/garments';
++import {
++  cmToInch,
++  inchToCm,
++  determineRecommendedSize,
++  calculateFabricRequirements,
++  validateMeasurements
++} from './calculations';
++
++const garment = (id) => GARMENTS.find((g) => g.id === id);
++
++describe('unit conversion', () => {
++  it('keeps quarter-inch input stable (inch -> cm -> inch)', () => {
++    for (const inch of [28, 35.25, 36.5, 40.75]) {
++      expect(cmToInch(inchToCm(inch))).toBe(inch);
++    }
++  });
++  it('handles empty / invalid values', () => {
++    expect(cmToInch('')).toBe(0);
++    expect(inchToCm(undefined)).toBe(0);
++    expect(cmToInch(NaN)).toBe(0);
++  });
++});
++
++describe('fabric calculator', () => {
++  it('uses the length declared on the hem option (pants)', () => {
++    const pants = garment('pants');
++    const full = calculateFabricRequirements(pants, 'M', 140, false, 'knee', 'none');
++    const culottes = calculateFabricRequirements(pants, 'M', 140, false, 'midi', 'none');
++    expect(culottes.meters).toBeLessThan(full.meters);
++  });
++  it('shorter hem never needs more fabric than a longer hem (skirt)', () => {
++    const skirt = garment('a-line-skirt');
++    const m = (h) => calculateFabricRequirements(skirt, 'M', 140, false, h, 'none').meters;
++    expect(m('mini')).toBeLessThan(m('knee'));
++    expect(m('knee')).toBeLessThan(m('midi'));
++    expect(m('midi')).toBeLessThan(m('maxi'));
++  });
++  it('narrow fabric and nap both increase yardage', () => {
++    const dress = garment('simple-dress');
++    const base = calculateFabricRequirements(dress, 'M', 140, false, 'knee', 'short').meters;
++    expect(calculateFabricRequirements(dress, 'M', 110, false, 'knee', 'short').meters).toBeGreaterThan(base);
++    expect(calculateFabricRequirements(dress, 'M', 140, true, 'knee', 'short').meters).toBeGreaterThan(base);
++  });
++  it('every garment returns a positive amount for every hem option', () => {
++    for (const g of GARMENTS) {
++      for (const h of g.options.hem || []) {
++        expect(calculateFabricRequirements(g, 'M', 140, false, h.id, 'short').meters).toBeGreaterThan(0);
++      }
++    }
++  });
++});
++
++describe('garment data', () => {
++  it('every hem option has lengthCm and exactly one default', () => {
++    for (const g of GARMENTS) {
++      const hems = g.options.hem || [];
++      expect(hems.every((h) => typeof h.lengthCm === 'number')).toBe(true);
++      expect(hems.filter((h) => h.default).length).toBe(1);
++    }
++  });
++});
++
++describe('size finder', () => {
++  it('recommends a size and no mismatch for proportional measurements', () => {
++    const r = determineRecommendedSize({ bust: 90, waist: 70, hips: 97 }, 'regular');
++    expect(r.recommendedSize.label).toBeTruthy();
++    expect(r.hasMismatch).toBe(false);
++  });
++  it('flags a real mismatch (small bust, large hips)', () => {
++    expect(determineRecommendedSize({ bust: 84, waist: 70, hips: 120 }, 'fitted').hasMismatch).toBe(true);
++  });
++  it('reports missing and out-of-chart measurements', () => {
++    const r = determineRecommendedSize({ bust: 200, waist: '', hips: 300 }, 'regular');
++    expect(r.usedDefaults).toEqual(['waist']);
++    expect(r.outOfChart).toEqual(['bust', 'hips']);
++  });
++});
++
++describe('validation', () => {
++  it('warns when waist is larger than hips', () => {
++    const w = validateMeasurements({ waist: 110, hips: 95 });
++    expect(w.some((x) => x.label === 'Waist vs Hips')).toBe(true);
++  });
++});

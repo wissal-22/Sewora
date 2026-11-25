@@ -10,7 +10,7 @@ import { TapeMeasureIcon, PlusIcon, TrashIcon, AlertCircleIcon, InfoIcon, CheckI
 function BodyDiagram({ activeField, measurements, unit }) {
   const currentTip = MEASURING_TIPS[activeField] || MEASURING_TIPS.bust;
   const currentVal = measurements ? measurements[activeField] : 0;
-  const displayVal = unit === 'in' ? `${cmToInch(currentVal)}" in` : `${currentVal} cm`;
+  const displayVal = unit === 'in' ? `${cmToInch(currentVal, 1)}" in` : `${currentVal} cm`;
 
   // Center axis
   const cx = 110;
@@ -582,7 +582,7 @@ export default function MeasurementForm({
                     <div className="text-[11px] text-stone-400 font-mono mt-0.5">
                       {unit === 'in'
                         ? `≈ ${(rawCm ?? 0).toFixed(1)} cm`
-                        : `≈ ${cmToInch(rawCm)} in`}
+                        : `≈ ${cmToInch(rawCm, 1)} in`}
                     </div>
                   </div>
                 </div>

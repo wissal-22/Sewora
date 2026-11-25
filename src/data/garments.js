@@ -37,8 +37,8 @@ export const GARMENTS = [
         { id: 'short', label: 'Short Bell Sleeve' }
       ],
       hem: [
-        { id: 'maxi', label: 'Floor-length Maxi (145 cm)', default: true },
-        { id: 'midi', label: 'Midi Kaftan Tunica (115 cm)' }
+        { id: 'maxi', label: 'Floor-length Maxi (145 cm)', lengthCm: 145, default: true },
+        { id: 'midi', label: 'Midi Kaftan Tunica (115 cm)', lengthCm: 115 }
       ],
       pockets: [
         { id: 'side-slit', label: 'Side Seam Slits & Open Pocket Reach', default: true },
@@ -133,10 +133,10 @@ export const GARMENTS = [
       neckline: [],
       sleeves: [],
       hem: [
-        { id: 'mini', label: 'Mini (45 cm)' },
-        { id: 'knee', label: 'Knee Length (60 cm)', default: true },
-        { id: 'midi', label: 'Midi Length (75 cm)' },
-        { id: 'maxi', label: 'Maxi Length (95 cm)' }
+        { id: 'mini', label: 'Mini (45 cm)', lengthCm: 45 },
+        { id: 'knee', label: 'Knee Length (60 cm)', lengthCm: 60, default: true },
+        { id: 'midi', label: 'Midi Length (75 cm)', lengthCm: 75 },
+        { id: 'maxi', label: 'Maxi Length (95 cm)', lengthCm: 95 }
       ],
       pockets: [
         { id: 'patch', label: 'Curved Patch Pockets', default: true },
@@ -226,9 +226,9 @@ export const GARMENTS = [
         { id: 'none', label: 'Sleeveless / Muscle Tank' }
       ],
       hem: [
-        { id: 'knee', label: 'Standard Hip Length (65 cm)', default: true },
-        { id: 'mini', label: 'Cropped Length (50 cm)' },
-        { id: 'midi', label: 'Tunic Length (80 cm)' }
+        { id: 'knee', label: 'Standard Hip Length (65 cm)', lengthCm: 65, default: true },
+        { id: 'mini', label: 'Cropped Length (50 cm)', lengthCm: 50 },
+        { id: 'midi', label: 'Tunic Length (80 cm)', lengthCm: 80 }
       ],
       pockets: [
         { id: 'none', label: 'No Pocket', default: true },
@@ -317,9 +317,9 @@ export const GARMENTS = [
         { id: 'none', label: 'Sleeveless with Bias Finish' }
       ],
       hem: [
-        { id: 'knee', label: 'Knee Length (95 cm)', default: true },
-        { id: 'midi', label: 'Midi Length (115 cm)' },
-        { id: 'mini', label: 'Mini (82 cm)' }
+        { id: 'knee', label: 'Knee Length (95 cm)', lengthCm: 95, default: true },
+        { id: 'midi', label: 'Midi Length (115 cm)', lengthCm: 115 },
+        { id: 'mini', label: 'Mini (82 cm)', lengthCm: 82 }
       ],
       pockets: [
         { id: 'in-seam', label: 'Hidden In-Seam Pockets', default: true },
@@ -400,9 +400,9 @@ export const GARMENTS = [
       neckline: [],
       sleeves: [],
       hem: [
-        { id: 'knee', label: 'Standard Tote (40 x 38 x 10 cm)', default: true },
-        { id: 'mini', label: 'Compact Book Tote (32 x 30 x 8 cm)' },
-        { id: 'maxi', label: 'Oversized Beach Tote (52 x 45 x 14 cm)' }
+        { id: 'knee', label: 'Standard Tote (40 x 38 x 10 cm)', lengthCm: 40, default: true },
+        { id: 'mini', label: 'Compact Book Tote (32 x 30 x 8 cm)', lengthCm: 32 },
+        { id: 'maxi', label: 'Oversized Beach Tote (52 x 45 x 14 cm)', lengthCm: 52 }
       ],
       pockets: [
         { id: 'inner', label: 'Divided Inner Slip Pocket', default: true },
@@ -483,10 +483,10 @@ export const GARMENTS = [
       neckline: [],
       sleeves: [],
       hem: [
-        { id: 'knee', label: 'Standard Square 18"x18" (45x45 cm)', default: true },
-        { id: 'mini', label: 'Accent Pillow 14"x14" (35x35 cm)' },
-        { id: 'midi', label: 'Euro Sham 24"x24" (60x60 cm)' },
-        { id: 'maxi', label: 'Lumbar Pillow 14"x28" (35x70 cm)' }
+        { id: 'knee', label: 'Standard Square 18"x18" (45x45 cm)', lengthCm: 45, default: true },
+        { id: 'mini', label: 'Accent Pillow 14"x14" (35x35 cm)', lengthCm: 35 },
+        { id: 'midi', label: 'Euro Sham 24"x24" (60x60 cm)', lengthCm: 60 },
+        { id: 'maxi', label: 'Lumbar Pillow 14"x28" (35x70 cm)', lengthCm: 70 }
       ],
       pockets: []
     },
@@ -550,9 +550,9 @@ export const GARMENTS = [
       neckline: [],
       sleeves: [],
       hem: [
-        { id: 'knee', label: 'Full Length Floor Skim (102 cm)', default: true },
-        { id: 'mini', label: 'Cropped Ankle Length (90 cm)' },
-        { id: 'midi', label: 'Culottes / Mid-Calf (78 cm)' }
+        { id: 'knee', label: 'Full Length Floor Skim (102 cm)', lengthCm: 102, default: true },
+        { id: 'mini', label: 'Cropped Ankle Length (90 cm)', lengthCm: 90 },
+        { id: 'midi', label: 'Culottes / Mid-Calf (78 cm)', lengthCm: 78 }
       ],
       pockets: [
         { id: 'slant', label: 'Slant Front Slash Pockets', default: true },

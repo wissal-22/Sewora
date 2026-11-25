@@ -22,6 +22,16 @@ import {
   BookOpenIcon
 } from './components/Icons';
 
+// Pick the option flagged `default: true` for each option group (falls back to the first one)
+function getDefaultOptions(garment) {
+  const opts = {};
+  for (const key of ['neckline', 'sleeves', 'hem', 'pockets']) {
+    const list = garment.options?.[key];
+    if (list?.length) opts[key] = (list.find((o) => o.default) || list[0]).id;
+  }
+  return opts;
+}
+
 export default function App() {
   // Theme state: default dark as shown in luxury couture reference image
   const [isDark, setIsDark] = useState(() => {
@@ -75,14 +85,7 @@ export default function App() {
   const activeGarment = GARMENTS.find((g) => g.id === activeGarmentId) || GARMENTS[0];
 
   // Garment Options State
-  const [garmentOptions, setGarmentOptions] = useState(() => {
-    const initialOpts = {};
-    if (activeGarment.options.neckline?.length) initialOpts.neckline = activeGarment.options.neckline[0].id;
-    if (activeGarment.options.sleeves?.length) initialOpts.sleeves = activeGarment.options.sleeves[0].id;
-    if (activeGarment.options.hem?.length) initialOpts.hem = activeGarment.options.hem[0].id;
-    if (activeGarment.options.pockets?.length) initialOpts.pockets = activeGarment.options.pockets[0].id;
-    return initialOpts;
-  });
+  const [garmentOptions, setGarmentOptions] = useState(() => getDefaultOptions(activeGarment));
 
   // Seam Allowance (cm)
   const [seamAllowanceCm, setSeamAllowanceCm] = useState(1.5);
@@ -164,11 +167,7 @@ export default function App() {
     setActiveGarmentId(g.id);
     safeStorage.set(STORAGE_KEYS.ACTIVE_GARMENT_ID, g.id);
 
-    const defaultOpts = {};
-    if (g.options.neckline?.length) defaultOpts.neckline = g.options.neckline[0].id;
-    if (g.options.sleeves?.length) defaultOpts.sleeves = g.options.sleeves[0].id;
-    if (g.options.hem?.length) defaultOpts.hem = g.options.hem[0].id;
-    if (g.options.pockets?.length) defaultOpts.pockets = g.options.pockets[0].id;
+    const defaultOpts = getDefaultOptions(g);
     setGarmentOptions(defaultOpts);
   };
 

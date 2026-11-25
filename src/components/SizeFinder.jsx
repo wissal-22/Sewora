@@ -14,7 +14,9 @@ export default function SizeFinder({
     breakdown,
     hasMismatch,
     mismatchNotes,
-    fitEase
+    fitEase,
+    usedDefaults,
+    outOfChart
   } = determineRecommendedSize(measurements, fitPreference);
 
   return (
@@ -70,6 +72,27 @@ export default function SizeFinder({
             </div>
           </div>
         </div>
+
+        {/* Data-quality warnings: missing or out-of-chart measurements */}
+        {(usedDefaults.length > 0 || outOfChart.length > 0) && (
+          <div className="mt-6 flex items-start gap-3.5 bg-[#1a1714] border border-[#d4af37]/30 p-4 rounded-2xl text-xs text-stone-200">
+            <AlertCircleIcon className="w-5 h-5 text-[#d4af37] shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              {usedDefaults.length > 0 && (
+                <p>
+                  Missing measurement(s): <strong>{usedDefaults.join(', ')}</strong>. A typical value was
+                  used, so this size is only an estimate. Fill them in on the Measurements tab.
+                </p>
+              )}
+              {outOfChart.length > 0 && (
+                <p>
+                  <strong>{outOfChart.join(', ')}</strong> fall outside the standard size chart. The
+                  closest size is shown, but custom pattern grading is needed.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Multi-Body-Part Mismatch Alert & Grading Advice */}
         {hasMismatch && (

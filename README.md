@@ -62,7 +62,7 @@
 ## 🚀 How to Run the App
 
 1. Ensure [Node.js](https://nodejs.org) (v18+) is installed.
-2. In the project directory (`c:\Users\pc\Sewora`), start the Vite development server:
+2. In the project directory, install dependencies with `npm install`, then start the Vite development server:
    ```bash
    npm run dev
    ```
